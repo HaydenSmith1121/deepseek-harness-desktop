@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+  <title>DeepSeek Harness</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- ======== 侧边栏 ======== -->
+    <aside id="sidebar">
+      <div class="brand">
+        <div class="brand-logo">DH</div>
+        <div class="brand-text">
+          <div class="brand-name">DeepSeek Harness</div>
+          <div class="brand-sub">桌面智能体工作台</div>
+        </div>
+      </div>
+      <button id="btn-new-chat" class="btn-new-chat">＋ 新建对话</button>
+      <div class="sessions-label">历史会话</div>
+      <div id="session-list" class="session-list"></div>
+      <div class="sidebar-footer">
+        <button id="btn-settings" class="btn-ghost">⚙ 设置</button>
+        <span id="app-version" class="version"></span>
+      </div>
+    </aside>
+
+    <!-- ======== 主区域 ======== -->
+    <main id="main">
+      <header id="topbar">
+        <div id="topbar-title" class="topbar-title">新对话</div>
+        <div class="topbar-badges">
+          <span id="badge-model" class="badge badge-model">deepseek-chat</span>
+          <span id="badge-approval" class="badge" title="点击切换执行确认模式">确认模式</span>
+          <span id="badge-workspace" class="badge badge-ws" title="智能体工作目录">工作目录</span>
+        </div>
+      </header>
+
+      <div id="chat" class="chat">
+        <div id="welcome" class="welcome">
+          <div class="welcome-logo">DH</div>
+          <h1>DeepSeek Harness</h1>
+          <p>一个能真正动手干活的本地智能体：读写文件、执行命令、搜索代码、抓取网页。</p>
+          <div class="welcome-examples">
+            <button class="example" data-prompt="列出当前工作目录的结构，并给我一个简要的项目概览">📁 探索工作目录结构</button>
+            <button class="example" data-prompt="在工作目录里创建一个 hello.py，运行它并把结果告诉我">🐍 写个脚本并运行</button>
+            <button class="example" data-prompt="搜索工作目录里所有的 README 文件，总结它们的内容">🔍 搜索并总结文档</button>
+            <button class="example" data-prompt="抓取 https://api.github.com/repos/markedjs/marked 的内容，告诉我这个项目是什么">🌐 联网查资料</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="composer" class="composer">
+        <textarea id="input" placeholder="给智能体下达任务…（Enter 发送，Shift+Enter 换行）" rows="1"></textarea>
+        <div class="composer-actions">
+          <span id="composer-hint" class="composer-hint"></span>
+          <button id="btn-stop" class="btn-stop hidden">■ 停止</button>
+          <button id="btn-send" class="btn-send">发送 ➤</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ======== 设置弹窗 ======== -->
+  <div id="settings-modal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2>设置</h2>
+        <button class="modal-close" id="btn-settings-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label>DeepSeek API Key <span id="key-status" class="key-status"></span></label>
+          <div class="key-row">
+            <input type="password" id="input-apikey" placeholder="sk-..." autocomplete="off">
+            <button id="btn-save-key" class="btn-secondary">保存 Key</button>
+          </div>
+          <div class="field-hint">保存在本机，使用系统级加密（Windows DPAPI / safeStorage），不会上传。</div>
+        </div>
+        <div class="field">
+          <label>模型</label>
+          <select id="input-model">
+            <option value="deepseek-chat">deepseek-chat（支持工具调用）</option>
+            <option value="deepseek-reasoner">deepseek-reasoner（深度思考）</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>温度 <span id="temp-value"></span></label>
+            <input type="range" id="input-temperature" min="0" max="2" step="0.1">
+          </div>
+          <div class="field">
+            <label>最大输出 tokens</label>
+            <input type="number" id="input-maxtokens" min="512" max="8192" step="256">
+          </div>
+        </div>
+        <div class="field">
+          <label>工具执行确认模式</label>
+          <select id="input-approval">
+            <option value="confirm-dangerous">确认危险操作（推荐）：执行命令 / 越界写入前询问</option>
+            <option value="confirm-all">每次工具调用都确认</option>
+            <option value="auto">全自动执行（谨慎）</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>智能体工作目录</label>
+          <div class="key-row">
+            <input type="text" id="input-workspace" readonly>
+            <button id="btn-pick-workspace" class="btn-secondary">选择目录</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>API 地址（高级）</label>
+          <input type="text" id="input-baseurl" placeholder="https://api.deepseek.com">
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button id="btn-settings-save" class="btn-primary">保存设置</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../node_modules/marked/marked.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

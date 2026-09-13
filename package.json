@@ -1,0 +1,47 @@
+{
+  "name": "deepseek-harness-desktop",
+  "version": "1.0.0",
+  "description": "DeepSeek Harness - DeepSeek API debugging & evaluation desktop tool (chat testing / batch evaluation / model comparison)",
+  "main": "main.js",
+  "author": "HaydenSmith1121",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HaydenSmith1121/deepseek-harness-desktop.git"
+  },
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test tests/",
+    "build": "electron-builder --win portable --x64"
+  },
+  "devDependencies": {
+    "electron": "^31.7.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "top.heixinyun.deepseek-harness",
+    "productName": "DeepSeek Harness",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "main/**/*",
+      "renderer/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.png"
+    },
+    "portable": {
+      "artifactName": "DeepSeek-Harness-Setup-${version}.exe"
+    }
+  }
+}
