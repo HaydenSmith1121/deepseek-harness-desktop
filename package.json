@@ -1,8 +1,9 @@
 {
   "name": "deepseek-harness-desktop",
-  "version": "1.0.0",
-  "description": "DeepSeek Harness - DeepSeek API debugging & evaluation desktop tool (chat testing / batch evaluation / model comparison)",
-  "main": "main.js",
+  "productName": "DeepSeek Harness",
+  "version": "0.1.0",
+  "description": "DeepSeek 智能体 Harness 桌面版：基于 Electron 的本地 Agent 工作台（工具调用 / 流式输出 / 会话管理）",
+  "main": "src/main/main.js",
   "author": "HaydenSmith1121",
   "license": "MIT",
   "repository": {
@@ -11,37 +12,14 @@
   },
   "scripts": {
     "start": "electron .",
-    "test": "node --test tests/",
-    "build": "electron-builder --win portable --x64"
+    "smoke": "electron . --smoke",
+    "screenshot": "electron . --screenshot",
+    "test": "node tests/run.js"
+  },
+  "dependencies": {
+    "marked": "^12.0.0"
   },
   "devDependencies": {
-    "electron": "^31.7.0",
-    "electron-builder": "^24.13.3"
-  },
-  "build": {
-    "appId": "top.heixinyun.deepseek-harness",
-    "productName": "DeepSeek Harness",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "main.js",
-      "preload.js",
-      "main/**/*",
-      "renderer/**/*",
-      "package.json"
-    ],
-    "win": {
-      "target": [
-        {
-          "target": "portable",
-          "arch": ["x64"]
-        }
-      ],
-      "icon": "build/icon.png"
-    },
-    "portable": {
-      "artifactName": "DeepSeek-Harness-Setup-${version}.exe"
-    }
+    "electron": "^33.0.0"
   }
 }
