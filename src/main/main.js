@@ -10,6 +10,9 @@ const { runAgentLoop, realTransport, buildSystemPrompt, AbortError } = require('
 const isSmoke = process.argv.includes('--smoke');
 const isScreenshot = process.argv.includes('--screenshot');
 
+// 虚拟机 / 远程桌面等无 GPU 环境的兼容兜底
+app.disableHardwareAcceleration();
+
 let win = null;
 let store = null;
 let tools = null;
@@ -300,6 +303,9 @@ app.whenReady().then(() => {
   }
 
   if (isScreenshot) {
+    w.webContents.on('console-message', (_e, level, message, line, sourceId) => {
+      if (level >= 2) console.error(`[renderer] ${sourceId}:${line} ${message}`);
+    });
     w.webContents.once('did-finish-load', () => {
       setTimeout(async () => {
         try {

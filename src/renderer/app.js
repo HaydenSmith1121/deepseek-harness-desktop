@@ -32,6 +32,7 @@ const TOOL_ICONS = {
 
 /* ============ 初始化 ============ */
 async function init() {
+  welcomeTemplate = $('#welcome').outerHTML;
   state.settings = await window.harness.getSettings();
   const info = await window.harness.appInfo();
   $('#app-version').textContent = 'v' + info.version;
@@ -137,12 +138,15 @@ async function openSession(id) {
   renderMessages(s.messages || []);
 }
 
+let welcomeTemplate = null; // 启动时缓存欢迎页模板（renderMessages 会清空 #chat）
+
 function renderMessages(messages) {
   const chat = $('#chat');
   chat.innerHTML = '';
-  $('#welcome').classList.add('hidden');
-  if (!messages.length) {
-    const w = $('#welcome').cloneNode(true);
+  if (!messages.length && welcomeTemplate) {
+    const holder = document.createElement('div');
+    holder.innerHTML = welcomeTemplate;
+    const w = holder.firstElementChild;
     w.classList.remove('hidden');
     w.querySelectorAll('.example').forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -580,6 +584,7 @@ function scrollBottom() {
 
 /* ============ 演示模式（--screenshot 截图用） ============ */
 window.__loadDemo = function () {
+  $('#settings-modal').classList.add('hidden');
   state.settings = state.settings || { model: 'deepseek-chat', approvalMode: 'confirm-dangerous', workspace: 'C:\\Users\\demo\\my-project' };
   state.sessionTitle = '帮我分析这个项目的结构';
   const demo = [
