@@ -16,14 +16,38 @@
 
 ## 🚀 快速开始
 
+### 方式一：下载可执行文件（推荐）
+
+到 [Releases](https://github.com/HaydenSmith1121/deepseek-harness-desktop/releases) 下载：
+
+- **`DeepSeek-Harness-Setup-x.x.x.exe`** — 安装版，双击安装到系统
+- **`DeepSeek-Harness-Portable-x.x.x.exe`** — 便携版，单文件免安装，双击即用
+
+首次启动在「设置」中填入 DeepSeek API Key（[platform.deepseek.com](https://platform.deepseek.com) 申请）即可。
+
+> 若在虚拟机 / 无 GPU 环境中窗口异常，可给 exe 加参数 `--no-sandbox --disable-gpu` 启动。
+
+### 方式二：源码运行
+
 ```bash
 # 1. 安装依赖（会下载 Electron 运行时，约 100MB）
 npm install
 
 # 2. 启动
 npm start
+```
 
-# 3. 首次启动在「设置」中填入 DeepSeek API Key（https://platform.deepseek.com 申请）
+### 打包自己的 exe
+
+```bash
+npm run dist       # 产物在 dist/ 目录（便携版 + 安装版）
+```
+
+国内网络建议先设置镜像：
+
+```bash
+export ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/
+export ELECTRON_BUILDER_BINARIES_MIRROR=https://npmmirror.com/mirrors/electron-builder-binaries/
 ```
 
 ## 🧪 测试

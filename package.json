@@ -14,12 +14,40 @@
     "start": "electron .",
     "smoke": "electron . --smoke",
     "screenshot": "electron . --screenshot",
-    "test": "node tests/run.js"
+    "test": "node tests/run.js",
+    "dist": "electron-builder --win --x64"
   },
   "dependencies": {
     "marked": "^12.0.0"
   },
   "devDependencies": {
-    "electron": "^33.0.0"
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "top.heixinyun.deepseek-harness",
+    "productName": "DeepSeek Harness",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        { "target": "portable", "arch": ["x64"] },
+        { "target": "nsis", "arch": ["x64"] }
+      ],
+      "icon": "build/icon.png"
+    },
+    "portable": {
+      "artifactName": "DeepSeek-Harness-Portable-${version}.exe"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "artifactName": "DeepSeek-Harness-Setup-${version}.exe"
+    }
   }
 }
