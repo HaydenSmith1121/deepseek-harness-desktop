@@ -15,12 +15,16 @@
         <div class="brand-logo">DH</div>
         <div class="brand-text">
           <div class="brand-name">DeepSeek Harness</div>
-          <div class="brand-sub">桌面智能体工作台</div>
+          <div class="brand-sub">智能体 · 批量评测 · 模型对比</div>
         </div>
       </div>
-      <button id="btn-new-chat" class="btn-new-chat">＋ 新建对话</button>
-      <div class="sessions-label">历史会话</div>
-      <div id="session-list" class="session-list"></div>
+      <nav id="nav">
+        <button class="nav-btn active" data-view="chat">💬 对话</button>
+        <button class="nav-btn" data-view="lab">🧪 评测台</button>
+      </nav>
+      <button id="btn-new-chat" class="btn-new-chat chat-only">＋ 新建对话</button>
+      <div class="sessions-label chat-only">历史会话</div>
+      <div id="session-list" class="session-list chat-only"></div>
       <div class="sidebar-footer">
         <button id="btn-settings" class="btn-ghost">⚙ 设置</button>
         <span id="app-version" class="version"></span>
@@ -28,7 +32,7 @@
     </aside>
 
     <!-- ======== 主区域 ======== -->
-    <main id="main">
+    <main id="main" class="view">
       <header id="topbar">
         <div id="topbar-title" class="topbar-title">新对话</div>
         <div class="topbar-badges">
@@ -60,6 +64,116 @@
           <button id="btn-send" class="btn-send">发送 ➤</button>
         </div>
       </div>
+    </main>
+
+    <!-- ======== 评测台 ======== -->
+    <main id="view-lab" class="view hidden">
+      <header id="lab-topbar">
+        <div class="lab-tabs">
+          <button class="lab-tab active" data-tab="batch">批量评测</button>
+          <button class="lab-tab" data-tab="compare">模型对比</button>
+        </div>
+        <div class="topbar-badges">
+          <span id="lab-badge-progress" class="badge"></span>
+          <button id="lab-export-json" class="btn-mini" disabled>导出 JSON</button>
+          <button id="lab-export-csv" class="btn-mini" disabled>导出 CSV</button>
+        </div>
+      </header>
+
+      <!-- ---- 批量评测 ---- -->
+      <section id="lab-batch" class="lab-panel">
+        <div class="lab-side">
+          <div class="lab-group">
+            <label class="lab-label">模型</label>
+            <select id="batch-model">
+              <option value="deepseek-chat">deepseek-chat</option>
+              <option value="deepseek-reasoner">deepseek-reasoner</option>
+            </select>
+          </div>
+          <div class="lab-group">
+            <label class="lab-label">系统提示词（可选）</label>
+            <textarea id="batch-system" rows="3" placeholder="例如：你是一个严谨的技术助手，回答要简洁。"></textarea>
+          </div>
+          <div class="lab-row">
+            <div class="lab-group">
+              <label class="lab-label">温度</label>
+              <input type="number" id="batch-temp" min="0" max="2" step="0.1">
+            </div>
+            <div class="lab-group">
+              <label class="lab-label">最大 tokens</label>
+              <input type="number" id="batch-maxtokens" min="1" step="256">
+            </div>
+          </div>
+          <div class="lab-row">
+            <div class="lab-group">
+              <label class="lab-label">并发数</label>
+              <input type="number" id="batch-concurrency" min="1" max="32" step="1">
+            </div>
+            <div class="lab-group">
+              <label class="lab-label">失败重试</label>
+              <input type="number" id="batch-retries" min="0" max="5" step="1">
+            </div>
+          </div>
+          <div class="lab-group grow">
+            <label class="lab-label">
+              数据集
+              <span class="lab-hint">每行一条 · <code>提示词 | 关键词1,关键词2</code> 自动判定</span>
+            </label>
+            <textarea id="batch-dataset" spellcheck="false" placeholder="把这段文字翻译成英文：今天天气不错&#10;用一句话解释什么是 HTTP | HTTP,协议&#10;# 以 # 开头的行会被忽略"></textarea>
+          </div>
+          <div class="lab-actions">
+            <button id="batch-open" class="btn-secondary">导入文件</button>
+            <button id="batch-sample" class="btn-secondary">示例数据</button>
+            <span class="spacer"></span>
+            <button id="batch-stop" class="btn-stop hidden">■ 停止</button>
+            <button id="batch-run" class="btn-primary">▶ 开始评测</button>
+          </div>
+        </div>
+        <div class="lab-main">
+          <div id="batch-summary" class="stat-grid"></div>
+          <div id="batch-results" class="result-wrap">
+            <div class="empty-hint">评测结果会显示在这里</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---- 模型对比 ---- -->
+      <section id="lab-compare" class="lab-panel hidden">
+        <div class="lab-side">
+          <div class="lab-group grow">
+            <label class="lab-label">提示词 <span class="lab-hint">每行一条</span></label>
+            <textarea id="cmp-prompts" spellcheck="false" placeholder="用一句话解释什么是闭包&#10;把「你好，世界」翻译成日语"></textarea>
+          </div>
+          <div class="lab-group">
+            <div class="lab-label-row">
+              <label class="lab-label">对比配置</label>
+              <button id="cmp-add" class="btn-mini">＋ 添加</button>
+            </div>
+            <div id="cmp-configs" class="cmp-configs"></div>
+          </div>
+          <div class="lab-row">
+            <div class="lab-group">
+              <label class="lab-label">每条重复</label>
+              <input type="number" id="cmp-repeats" min="1" max="10" step="1">
+            </div>
+            <div class="lab-group">
+              <label class="lab-label">并发数</label>
+              <input type="number" id="cmp-concurrency" min="1" max="32" step="1">
+            </div>
+          </div>
+          <div class="lab-actions">
+            <button id="cmp-sample" class="btn-secondary">示例数据</button>
+            <span class="spacer"></span>
+            <button id="cmp-stop" class="btn-stop hidden">■ 停止</button>
+            <button id="cmp-run" class="btn-primary">▶ 开始对比</button>
+          </div>
+        </div>
+        <div class="lab-main">
+          <div id="cmp-summary" class="result-wrap">
+            <div class="empty-hint">对比结果会显示在这里</div>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -122,7 +236,8 @@
     </div>
   </div>
 
-  <script src="../../node_modules/marked/marked.min.js"></script>
+  <script src="vendor/marked.min.js"></script>
   <script src="app.js"></script>
+  <script src="lab.js"></script>
 </body>
 </html>

@@ -28,6 +28,19 @@ contextBridge.exposeInMainWorld('harness', {
     return () => ipcRenderer.removeListener('agent:event', listener);
   },
 
+  // 评测台（批量评测 / 模型对比）
+  labModels: () => ipcRenderer.invoke('lab:models'),
+  labRunBatch: (payload) => ipcRenderer.invoke('lab:run-batch', payload),
+  labRunCompare: (payload) => ipcRenderer.invoke('lab:run-compare', payload),
+  labStop: (runId) => ipcRenderer.invoke('lab:stop', runId),
+  labOpenDataset: () => ipcRenderer.invoke('lab:open-dataset'),
+  labExport: (payload) => ipcRenderer.invoke('lab:export', payload),
+  onLabEvent: (cb) => {
+    const listener = (_e, data) => cb(data);
+    ipcRenderer.on('lab:event', listener);
+    return () => ipcRenderer.removeListener('lab:event', listener);
+  },
+
   // 应用信息
   appInfo: () => ipcRenderer.invoke('app:info'),
 });

@@ -6,9 +6,11 @@ const fs = require('fs');
 const { Store } = require('./store');
 const { createTools, isInside } = require('./tools');
 const { runAgentLoop, realTransport, buildSystemPrompt, AbortError } = require('./agent');
+const { registerLabIpc } = require('./lab');
 
 const isSmoke = process.argv.includes('--smoke');
 const isScreenshot = process.argv.includes('--screenshot');
+const isScreenshotLab = process.argv.includes('--screenshot-lab');
 
 // 虚拟机 / 远程桌面等无 GPU 环境的兼容兜底
 app.disableHardwareAcceleration();
@@ -71,6 +73,8 @@ function publicSettings() {
     baseUrl: store.get('baseUrl'),
     workspace: store.get('workspace'),
     approvalMode: store.get('approvalMode'),
+    timeoutMs: store.get('timeoutMs') || 180000,
+    prices: store.get('prices') || null,
     hasApiKey: !!key,
     apiKeyMasked: key ? maskKey(key) : '',
     apiKeyPlain: !!store.get('apiKeyPlain'),
@@ -117,13 +121,14 @@ function registerIpc() {
   });
 
   ipcMain.handle('settings:set', (_e, partial) => {
-    const allowed = ['model', 'temperature', 'maxTokens', 'workspace', 'approvalMode', 'baseUrl'];
+    const allowed = ['model', 'temperature', 'maxTokens', 'workspace', 'approvalMode', 'baseUrl', 'prices', 'timeoutMs'];
     const patch = {};
     for (const k of allowed) {
       if (k in partial) patch[k] = partial[k];
     }
     if (patch.temperature != null) patch.temperature = Math.min(2, Math.max(0, Number(patch.temperature)));
     if (patch.maxTokens != null) patch.maxTokens = Math.min(8192, Math.max(512, Number(patch.maxTokens)));
+    if (patch.timeoutMs != null) patch.timeoutMs = Math.min(600000, Math.max(10000, Number(patch.timeoutMs)));
     store.set(patch);
     return { ok: true, settings: publicSettings() };
   });
@@ -244,6 +249,9 @@ function registerIpc() {
     electron: process.versions.electron,
     node: process.versions.node,
   }));
+
+  // 评测台（批量评测 / 模型对比）
+  registerLabIpc({ ipcMain, getWin: () => win, getApiKey, store });
 }
 
 function createWindow() {
@@ -302,17 +310,22 @@ app.whenReady().then(() => {
     }, 15000);
   }
 
-  if (isScreenshot) {
+  if (isScreenshot || isScreenshotLab) {
+    const demoFn = isScreenshotLab ? '__loadLabDemo' : '__loadDemo';
+    const outName = isScreenshotLab ? 'screenshot-lab.png' : 'screenshot.png';
+    // 打包后 app.getAppPath() 是 resources/app.asar（文件），其下不可写 → 落到 userData
+    const shotDir = app.isPackaged ? app.getPath('userData') : path.join(app.getAppPath(), 'docs');
     w.webContents.on('console-message', (_e, level, message, line, sourceId) => {
       if (level >= 2) console.error(`[renderer] ${sourceId}:${line} ${message}`);
     });
     w.webContents.once('did-finish-load', () => {
       setTimeout(async () => {
         try {
-          await w.webContents.executeJavaScript('window.__loadDemo && window.__loadDemo()', true);
+          await w.webContents.executeJavaScript(`window.${demoFn} && window.${demoFn}()`, true);
           await new Promise((r) => setTimeout(r, 1500));
           const img = await w.webContents.capturePage();
-          const out = path.join(app.getAppPath(), 'docs', 'screenshot.png');
+          fs.mkdirSync(shotDir, { recursive: true });
+          const out = path.join(shotDir, outName);
           fs.writeFileSync(out, img.toPNG());
           console.log('SCREENSHOT_OK ' + out);
         } catch (err) {

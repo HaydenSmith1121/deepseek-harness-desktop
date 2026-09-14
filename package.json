@@ -1,8 +1,8 @@
 {
   "name": "deepseek-harness-desktop",
   "productName": "DeepSeek Harness",
-  "version": "0.1.0",
-  "description": "DeepSeek 智能体 Harness 桌面版：基于 Electron 的本地 Agent 工作台（工具调用 / 流式输出 / 会话管理）",
+  "version": "1.0.0",
+  "description": "DeepSeek 桌面工作台：智能体对话（工具调用 / 流式输出 / 会话管理）+ 评测台（批量评测 / 模型对比 / 成本统计）",
   "main": "src/main/main.js",
   "author": "HaydenSmith1121",
   "license": "MIT",
@@ -14,15 +14,16 @@
     "start": "electron .",
     "smoke": "electron . --smoke",
     "screenshot": "electron . --screenshot",
+    "screenshot:lab": "electron . --screenshot-lab",
     "test": "node tests/run.js",
-    "dist": "electron-builder --win --x64"
+    "dist": "electron-builder --win --x64",
+    "dist:portable": "electron-builder --win portable --x64"
   },
-  "dependencies": {
-    "marked": "^12.0.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "electron": "^33.0.0",
-    "electron-builder": "^25.1.8"
+    "electron-builder": "^25.1.8",
+    "marked": "^12.0.0"
   },
   "build": {
     "appId": "top.heixinyun.deepseek-harness",
@@ -32,7 +33,8 @@
     },
     "files": [
       "src/**/*",
-      "package.json"
+      "package.json",
+      "!**/*.map"
     ],
     "win": {
       "target": [
