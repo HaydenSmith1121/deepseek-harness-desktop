@@ -1,5 +1,5 @@
 {
-  "name": "deepseek-harness-desktop",
+  "name": "deepseek-harness-studio",
   "productName": "DeepSeek Harness",
   "version": "1.0.0",
   "description": "DeepSeek 桌面工作台：智能体对话（工具调用 / 流式输出 / 会话管理）+ 评测台（批量评测 / 模型对比 / 成本统计）",
