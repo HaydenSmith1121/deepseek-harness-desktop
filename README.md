@@ -39,7 +39,7 @@
 
 ### 方式一：下载可执行文件（推荐）
 
-到 [Releases](https://github.com/HaydenSmith1121/deepseek-harness-desktop/releases) 下载：
+到 [Releases](https://github.com/HaydenSmith1121/deepseek-harness-studio/releases) 下载：
 
 - **`DeepSeek-Harness-Setup-<版本>.exe`** — 安装版，双击安装到系统
 - **`DeepSeek-Harness-Portable-<版本>.exe`** — 便携版，单文件免安装，双击即用
