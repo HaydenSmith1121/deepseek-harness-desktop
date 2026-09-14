@@ -3,20 +3,42 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('harness', {
-  // 设置
+  // ---- 设置 ----
   getSettings: () => ipcRenderer.invoke('settings:get'),
-  setApiKey: (key) => ipcRenderer.invoke('settings:set-api-key', key),
   setSettings: (partial) => ipcRenderer.invoke('settings:set', partial),
   pickWorkspace: () => ipcRenderer.invoke('dialog:pick-workspace'),
 
-  // 会话
+  // ---- 模型服务商（可接入任意 OpenAI 兼容接口）----
+  listProviders: () => ipcRenderer.invoke('providers:list'),
+  saveProvider: (payload) => ipcRenderer.invoke('providers:save', payload),
+  deleteProvider: (id) => ipcRenderer.invoke('providers:delete', id),
+  activateProvider: (id) => ipcRenderer.invoke('providers:activate', id),
+  fetchProviderModels: (payload) => ipcRenderer.invoke('providers:models', payload),
+  setProviderKey: (payload) => ipcRenderer.invoke('providers:set-key', payload),
+
+  // ---- 会话 ----
   listSessions: () => ipcRenderer.invoke('sessions:list'),
-  createSession: () => ipcRenderer.invoke('sessions:create'),
+  createSession: (folderId) => ipcRenderer.invoke('sessions:create', folderId),
   getSession: (id) => ipcRenderer.invoke('sessions:get', id),
   renameSession: (id, title) => ipcRenderer.invoke('sessions:rename', { id, title }),
   deleteSession: (id) => ipcRenderer.invoke('sessions:delete', id),
+  moveSession: (id, folderId) => ipcRenderer.invoke('sessions:move', { id, folderId }),
+  archiveSession: (id, archived) => ipcRenderer.invoke('sessions:archive', { id, archived }),
 
-  // Agent
+  // ---- 文件夹 ----
+  listFolders: () => ipcRenderer.invoke('folders:list'),
+  createFolder: (name) => ipcRenderer.invoke('folders:create', name),
+  renameFolder: (id, name) => ipcRenderer.invoke('folders:rename', { id, name }),
+  deleteFolder: (id) => ipcRenderer.invoke('folders:delete', id),
+
+  // ---- 插件 ----
+  listPlugins: () => ipcRenderer.invoke('plugins:list'),
+  savePlugin: (plugin) => ipcRenderer.invoke('plugins:save', plugin),
+  deletePlugin: (id) => ipcRenderer.invoke('plugins:delete', id),
+  setPluginEnabled: (payload) => ipcRenderer.invoke('plugins:set-enabled', payload),
+  importPlugins: (list) => ipcRenderer.invoke('plugins:import', list),
+
+  // ---- 智能体 ----
   startAgent: (payload) => ipcRenderer.invoke('agent:start', payload),
   stopAgent: (runId) => ipcRenderer.invoke('agent:stop', runId),
   respondApproval: (payload) => ipcRenderer.invoke('agent:approval', payload),
@@ -28,19 +50,6 @@ contextBridge.exposeInMainWorld('harness', {
     return () => ipcRenderer.removeListener('agent:event', listener);
   },
 
-  // 评测台（批量评测 / 模型对比）
-  labModels: () => ipcRenderer.invoke('lab:models'),
-  labRunBatch: (payload) => ipcRenderer.invoke('lab:run-batch', payload),
-  labRunCompare: (payload) => ipcRenderer.invoke('lab:run-compare', payload),
-  labStop: (runId) => ipcRenderer.invoke('lab:stop', runId),
-  labOpenDataset: () => ipcRenderer.invoke('lab:open-dataset'),
-  labExport: (payload) => ipcRenderer.invoke('lab:export', payload),
-  onLabEvent: (cb) => {
-    const listener = (_e, data) => cb(data);
-    ipcRenderer.on('lab:event', listener);
-    return () => ipcRenderer.removeListener('lab:event', listener);
-  },
-
-  // 应用信息
+  // ---- 应用信息 ----
   appInfo: () => ipcRenderer.invoke('app:info'),
 });

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy"
@@ -7,7 +7,7 @@
   <title>DeepSeek Harness</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body data-view="chat">
   <div id="app">
     <!-- ======== 侧边栏 ======== -->
     <aside id="sidebar">
@@ -15,27 +15,39 @@
         <div class="brand-logo">DH</div>
         <div class="brand-text">
           <div class="brand-name">DeepSeek Harness</div>
-          <div class="brand-sub">智能体 · 批量评测 · 模型对比</div>
+          <div class="brand-sub">智能体 · 多模型 · 插件</div>
         </div>
       </div>
+
       <nav id="nav">
         <button class="nav-btn active" data-view="chat">💬 对话</button>
-        <button class="nav-btn" data-view="lab">🧪 评测台</button>
+        <button class="nav-btn" data-view="plugins">🧩 插件</button>
       </nav>
-      <button id="btn-new-chat" class="btn-new-chat chat-only">＋ 新建对话</button>
-      <div class="sessions-label chat-only">历史会话</div>
-      <div id="session-list" class="session-list chat-only"></div>
+
+      <!-- ---------- 会话区（仅对话视图） ---------- -->
+      <div class="side-block chat-only">
+        <div class="side-actions">
+          <button id="btn-new-chat" class="btn-new-chat">＋ 新建对话</button>
+          <button id="btn-new-folder" class="btn-icon" title="新建文件夹">🗂</button>
+        </div>
+        <div class="sessions-label">历史会话</div>
+        <div id="session-list" class="session-list"></div>
+        <div id="archive-section" class="archive-section"></div>
+      </div>
+
       <div class="sidebar-footer">
         <button id="btn-settings" class="btn-ghost">⚙ 设置</button>
+        <button id="btn-theme" class="btn-ghost" title="切换深色 / 浅色主题">🌙</button>
         <span id="app-version" class="version"></span>
       </div>
     </aside>
 
-    <!-- ======== 主区域 ======== -->
+    <!-- ======== 对话视图 ======== -->
     <main id="main" class="view">
       <header id="topbar">
         <div id="topbar-title" class="topbar-title">新对话</div>
         <div class="topbar-badges">
+          <span id="badge-provider" class="badge" title="当前模型服务商">服务商</span>
           <span id="badge-model" class="badge badge-model">deepseek-chat</span>
           <span id="badge-approval" class="badge" title="点击切换执行确认模式">确认模式</span>
           <span id="badge-workspace" class="badge badge-ws" title="智能体工作目录">工作目录</span>
@@ -66,114 +78,25 @@
       </div>
     </main>
 
-    <!-- ======== 评测台 ======== -->
-    <main id="view-lab" class="view hidden">
-      <header id="lab-topbar">
-        <div class="lab-tabs">
-          <button class="lab-tab active" data-tab="batch">批量评测</button>
-          <button class="lab-tab" data-tab="compare">模型对比</button>
-        </div>
+    <!-- ======== 插件视图 ======== -->
+    <main id="view-plugins" class="view hidden">
+      <header id="plugins-topbar">
+        <div class="topbar-title">🧩 插件</div>
         <div class="topbar-badges">
-          <span id="lab-badge-progress" class="badge"></span>
-          <button id="lab-export-json" class="btn-mini" disabled>导出 JSON</button>
-          <button id="lab-export-csv" class="btn-mini" disabled>导出 CSV</button>
+          <button id="plugin-import" class="btn-mini">导入 JSON</button>
+          <button id="plugin-add" class="btn-primary btn-small">＋ 安装插件</button>
         </div>
       </header>
-
-      <!-- ---- 批量评测 ---- -->
-      <section id="lab-batch" class="lab-panel">
-        <div class="lab-side">
-          <div class="lab-group">
-            <label class="lab-label">模型</label>
-            <select id="batch-model">
-              <option value="deepseek-chat">deepseek-chat</option>
-              <option value="deepseek-reasoner">deepseek-reasoner</option>
-            </select>
-          </div>
-          <div class="lab-group">
-            <label class="lab-label">系统提示词（可选）</label>
-            <textarea id="batch-system" rows="3" placeholder="例如：你是一个严谨的技术助手，回答要简洁。"></textarea>
-          </div>
-          <div class="lab-row">
-            <div class="lab-group">
-              <label class="lab-label">温度</label>
-              <input type="number" id="batch-temp" min="0" max="2" step="0.1">
-            </div>
-            <div class="lab-group">
-              <label class="lab-label">最大 tokens</label>
-              <input type="number" id="batch-maxtokens" min="1" step="256">
-            </div>
-          </div>
-          <div class="lab-row">
-            <div class="lab-group">
-              <label class="lab-label">并发数</label>
-              <input type="number" id="batch-concurrency" min="1" max="32" step="1">
-            </div>
-            <div class="lab-group">
-              <label class="lab-label">失败重试</label>
-              <input type="number" id="batch-retries" min="0" max="5" step="1">
-            </div>
-          </div>
-          <div class="lab-group grow">
-            <label class="lab-label">
-              数据集
-              <span class="lab-hint">每行一条 · <code>提示词 | 关键词1,关键词2</code> 自动判定</span>
-            </label>
-            <textarea id="batch-dataset" spellcheck="false" placeholder="把这段文字翻译成英文：今天天气不错&#10;用一句话解释什么是 HTTP | HTTP,协议&#10;# 以 # 开头的行会被忽略"></textarea>
-          </div>
-          <div class="lab-actions">
-            <button id="batch-open" class="btn-secondary">导入文件</button>
-            <button id="batch-sample" class="btn-secondary">示例数据</button>
-            <span class="spacer"></span>
-            <button id="batch-stop" class="btn-stop hidden">■ 停止</button>
-            <button id="batch-run" class="btn-primary">▶ 开始评测</button>
-          </div>
+      <div class="plugins-body">
+        <div class="plugins-note">
+          插件把任意 HTTP 接口包装成模型可调用的工具：填好接口地址与参数 Schema 后，
+          <b>对话中的智能体就能直接调用它</b>（GET 类只读插件自动放行，会改远端数据的请求需你确认）。
         </div>
-        <div class="lab-main">
-          <div id="batch-summary" class="stat-grid"></div>
-          <div id="batch-results" class="result-wrap">
-            <div class="empty-hint">评测结果会显示在这里</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ---- 模型对比 ---- -->
-      <section id="lab-compare" class="lab-panel hidden">
-        <div class="lab-side">
-          <div class="lab-group grow">
-            <label class="lab-label">提示词 <span class="lab-hint">每行一条</span></label>
-            <textarea id="cmp-prompts" spellcheck="false" placeholder="用一句话解释什么是闭包&#10;把「你好，世界」翻译成日语"></textarea>
-          </div>
-          <div class="lab-group">
-            <div class="lab-label-row">
-              <label class="lab-label">对比配置</label>
-              <button id="cmp-add" class="btn-mini">＋ 添加</button>
-            </div>
-            <div id="cmp-configs" class="cmp-configs"></div>
-          </div>
-          <div class="lab-row">
-            <div class="lab-group">
-              <label class="lab-label">每条重复</label>
-              <input type="number" id="cmp-repeats" min="1" max="10" step="1">
-            </div>
-            <div class="lab-group">
-              <label class="lab-label">并发数</label>
-              <input type="number" id="cmp-concurrency" min="1" max="32" step="1">
-            </div>
-          </div>
-          <div class="lab-actions">
-            <button id="cmp-sample" class="btn-secondary">示例数据</button>
-            <span class="spacer"></span>
-            <button id="cmp-stop" class="btn-stop hidden">■ 停止</button>
-            <button id="cmp-run" class="btn-primary">▶ 开始对比</button>
-          </div>
-        </div>
-        <div class="lab-main">
-          <div id="cmp-summary" class="result-wrap">
-            <div class="empty-hint">对比结果会显示在这里</div>
-          </div>
-        </div>
-      </section>
+        <div class="section-title">自定义插件 <span id="plugin-count" class="count-tag"></span></div>
+        <div id="plugin-list" class="plugin-list"></div>
+        <div class="section-title">内置工具（不可卸载）</div>
+        <div id="builtin-list" class="plugin-list"></div>
+      </div>
     </main>
   </div>
 
@@ -185,20 +108,37 @@
         <button class="modal-close" id="btn-settings-close">✕</button>
       </div>
       <div class="modal-body">
+        <div class="section-title">模型服务</div>
         <div class="field">
-          <label>DeepSeek API Key <span id="key-status" class="key-status"></span></label>
+          <label>服务商</label>
+          <div class="key-row">
+            <select id="set-provider"></select>
+            <button id="btn-provider-new" class="btn-secondary">＋ 新增</button>
+            <button id="btn-provider-edit" class="btn-secondary">编辑</button>
+            <button id="btn-provider-del" class="btn-secondary danger">删除</button>
+          </div>
+          <div class="field-hint">可接入任意 OpenAI 兼容接口（DeepSeek / OpenAI / Kimi / 智谱 / 通义 / OpenRouter / Ollama / 自建网关…）。</div>
+        </div>
+        <div class="field">
+          <label>API Key <span id="key-status" class="key-status"></span></label>
           <div class="key-row">
             <input type="password" id="input-apikey" placeholder="sk-..." autocomplete="off">
             <button id="btn-save-key" class="btn-secondary">保存 Key</button>
           </div>
-          <div class="field-hint">保存在本机，使用系统级加密（Windows DPAPI / safeStorage），不会上传。</div>
+          <div class="field-hint">按服务商分别保存在本机，使用系统级加密（Windows DPAPI / safeStorage），不会上传。</div>
+        </div>
+        <div class="field">
+          <label>接口地址</label>
+          <input type="text" id="input-baseurl" placeholder="https://api.deepseek.com">
         </div>
         <div class="field">
           <label>模型</label>
-          <select id="input-model">
-            <option value="deepseek-chat">deepseek-chat（支持工具调用）</option>
-            <option value="deepseek-reasoner">deepseek-reasoner（深度思考）</option>
-          </select>
+          <div class="key-row">
+            <input type="text" id="input-model" list="model-options" placeholder="deepseek-chat" autocomplete="off">
+            <button id="btn-fetch-models" class="btn-secondary">拉取模型</button>
+          </div>
+          <datalist id="model-options"></datalist>
+          <div class="field-hint" id="model-hint">可直接填写模型名，也可点「拉取模型」从服务商读取列表。</div>
         </div>
         <div class="field-row">
           <div class="field">
@@ -207,13 +147,15 @@
           </div>
           <div class="field">
             <label>最大输出 tokens</label>
-            <input type="number" id="input-maxtokens" min="512" max="8192" step="256">
+            <input type="number" id="input-maxtokens" min="512" max="32768" step="256">
           </div>
         </div>
+
+        <div class="section-title">智能体</div>
         <div class="field">
           <label>工具执行确认模式</label>
           <select id="input-approval">
-            <option value="confirm-dangerous">确认危险操作（推荐）：执行命令 / 越界写入前询问</option>
+            <option value="confirm-dangerous">确认危险操作（推荐）：执行命令 / 越界写入 / 写类插件前询问</option>
             <option value="confirm-all">每次工具调用都确认</option>
             <option value="auto">全自动执行（谨慎）</option>
           </select>
@@ -225,9 +167,14 @@
             <button id="btn-pick-workspace" class="btn-secondary">选择目录</button>
           </div>
         </div>
+
+        <div class="section-title">界面</div>
         <div class="field">
-          <label>API 地址（高级）</label>
-          <input type="text" id="input-baseurl" placeholder="https://api.deepseek.com">
+          <label>主题</label>
+          <select id="input-theme">
+            <option value="dark">深色（夜间模式）</option>
+            <option value="light">浅色（白天模式）</option>
+          </select>
         </div>
       </div>
       <div class="modal-foot">
@@ -236,8 +183,173 @@
     </div>
   </div>
 
+  <!-- ======== 服务商编辑弹窗 ======== -->
+  <div id="provider-modal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 id="provider-modal-title">新增模型服务商</h2>
+        <button class="modal-close" id="btn-provider-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label>预设</label>
+          <select id="provider-preset"></select>
+          <div class="field-hint">选一个常见服务商可自动填好接口地址与候选模型；自建网关选「自定义」。</div>
+        </div>
+        <div class="field">
+          <label>名称</label>
+          <input type="text" id="provider-label" placeholder="例如：公司网关 / 我的 OpenAI">
+        </div>
+        <div class="field">
+          <label>接口地址</label>
+          <input type="text" id="provider-baseurl" placeholder="https://api.openai.com/v1">
+          <div class="field-hint">填到 <code>/v1</code> 一级即可，程序会自动拼接 <code>/chat/completions</code>。</div>
+        </div>
+        <div class="field">
+          <label>API Key <span class="field-hint">（编辑时留空表示不修改）</span></label>
+          <input type="password" id="provider-key" placeholder="sk-..." autocomplete="off">
+        </div>
+        <div class="field">
+          <label>候选模型 <span class="field-hint">每行一个，可留空后手填模型名</span></label>
+          <textarea id="provider-models" rows="4" spellcheck="false" placeholder="gpt-4o&#10;gpt-4o-mini"></textarea>
+        </div>
+        <div class="field">
+          <div class="key-row">
+            <button id="btn-provider-fetch" class="btn-secondary">从该服务商拉取模型列表</button>
+            <span id="provider-test-result" class="field-hint"></span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button id="btn-provider-cancel" class="btn-secondary">取消</button>
+        <button id="btn-provider-save" class="btn-primary">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== 插件编辑弹窗 ======== -->
+  <div id="plugin-modal" class="modal hidden">
+    <div class="modal-card wide">
+      <div class="modal-head">
+        <h2 id="plugin-modal-title">安装插件</h2>
+        <button class="modal-close" id="btn-plugin-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="plugin-modal-error" class="error-msg hidden"></div>
+        <div class="field-row">
+          <div class="field">
+            <label>工具名</label>
+            <input type="text" id="plugin-name" placeholder="weather_query" spellcheck="false">
+            <div class="field-hint">字母 / 数字 / 下划线，不能与内置工具重名。</div>
+          </div>
+          <div class="field">
+            <label>请求方式</label>
+            <select id="plugin-method">
+              <option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>描述 <span class="field-hint">写给模型看的：这个工具干什么、什么时候用</span></label>
+          <input type="text" id="plugin-desc" placeholder="查询某城市实时天气，参数 city 为城市名">
+        </div>
+        <div class="field">
+          <label>接口地址</label>
+          <input type="text" id="plugin-url" placeholder="https://api.example.com/weather?city={{city}}" spellcheck="false">
+          <div class="field-hint">用 <code>{{参数名}}</code> 占位，调用时自动替换（URL 中会做 URL 编码）。</div>
+        </div>
+        <div class="field">
+          <label>请求头（JSON，可选）</label>
+          <textarea id="plugin-headers" rows="2" spellcheck="false" placeholder='{"X-Api-Key": "xxxx"}'></textarea>
+        </div>
+        <div class="field">
+          <label>请求体模板（非 GET，可选）</label>
+          <textarea id="plugin-body" rows="3" spellcheck="false" placeholder='{"query": "{{keyword}}", "top_k": 5}'></textarea>
+        </div>
+        <div class="field">
+          <label>参数 Schema（JSON）</label>
+          <textarea id="plugin-params" rows="7" spellcheck="false"></textarea>
+          <div class="field-hint">OpenAI function calling 的 parameters 格式，模型据此理解参数。</div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>超时（毫秒）</label>
+            <input type="number" id="plugin-timeout" min="1000" max="120000" step="1000">
+          </div>
+          <div class="field">
+            <label>状态</label>
+            <select id="plugin-enabled">
+              <option value="true">启用</option>
+              <option value="false">停用</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button id="btn-plugin-cancel" class="btn-secondary">取消</button>
+        <button id="btn-plugin-save" class="btn-primary">保存插件</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== 导入插件弹窗 ======== -->
+  <div id="import-modal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2>导入插件</h2>
+        <button class="modal-close" id="btn-import-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="field-hint">
+          支持插件数组 <code>[{...}]</code> 或 <code>{ "plugins": [...] }</code>；
+          单项格式与手动新建插件一致（至少要 name / url / parameters）。
+        </div>
+        <div class="field">
+          <div class="key-row">
+            <button id="btn-import-file" class="btn-secondary">选择 .json 文件</button>
+            <span id="import-filename" class="field-hint">未选择文件</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>或直接粘贴 JSON</label>
+          <textarea id="import-text" rows="10" spellcheck="false" placeholder='{"plugins":[{"name":"...","url":"...","parameters":{"type":"object","properties":{}}}]}'></textarea>
+        </div>
+        <div id="import-result" class="field-hint"></div>
+      </div>
+      <div class="modal-foot">
+        <button id="btn-import-cancel" class="btn-secondary">关闭</button>
+        <button id="btn-import-do" class="btn-primary">导入</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== 通用输入/确认弹窗 ======== -->
+  <div id="dlg-modal" class="modal hidden">
+    <div class="modal-card narrow">
+      <div class="modal-head">
+        <h2 id="dlg-title">标题</h2>
+        <button class="modal-close" id="dlg-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <p id="dlg-desc" class="dlg-desc hidden"></p>
+        <div class="field" id="dlg-field">
+          <label id="dlg-label">名称</label>
+          <input type="text" id="dlg-input">
+          <div class="field-hint" id="dlg-hint"></div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button id="dlg-cancel" class="btn-secondary">取消</button>
+        <button id="dlg-ok" class="btn-primary">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 会话项更多菜单 -->
+  <div id="popmenu" class="popmenu hidden"></div>
+
   <script src="vendor/marked.min.js"></script>
   <script src="app.js"></script>
-  <script src="lab.js"></script>
+  <script src="plugins.js"></script>
 </body>
 </html>

@@ -248,7 +248,13 @@ function createTools({ workspace }) {
     return await fn(args);
   }
 
-  return { execute, schemas, isInside };
+  return {
+    execute,
+    schemas,
+    isInside,
+    /** 是否是本工具集里的内置工具（插件派发时用来区分归属） */
+    has: (name) => Object.prototype.hasOwnProperty.call(impl, name),
+  };
 }
 
 module.exports = { createTools, isInside, truncate, globToRegex, BINARY_EXTENSIONS };

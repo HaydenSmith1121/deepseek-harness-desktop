@@ -32,7 +32,8 @@ function buildSystemPrompt({ workspace, platform, extra }) {
     '3. 需要联网查资料时用 web_fetch。',
     '4. 涉及删除、覆盖重要文件、安装软件等危险命令要谨慎，并先向用户说明你打算做什么。',
     '5. 每次只发起完成当前目标所必需的工具调用；一个任务可以多步完成（上限 25 步）。',
-    '6. 任务完成后，用简洁的 Markdown 总结你做了什么、结果在哪里。',
+    '6. 除了内置工具，用户可能还装了「插件工具」（第三方 HTTP 接口），用法看各自的参数说明。',
+    '7. 任务完成后，用简洁的 Markdown 总结你做了什么、结果在哪里。',
     '',
     '# 回复风格',
     '- 始终使用简体中文回复（代码与命令除外）。',
@@ -175,7 +176,7 @@ async function runAgentLoop(opts) {
         emit('notice', { text: '当前模型不接受工具调用，已自动切换为纯对话模式继续回答。' });
         continue;
       }
-      throw new Error(`DeepSeek API 错误 (HTTP ${res.status}): ${String(res.text || '').slice(0, 500)}`);
+      throw new Error(`模型接口错误 (HTTP ${res.status}): ${String(res.text || '').slice(0, 500)}`);
     }
 
     const { content, reasoning, toolCalls, usage } = await consumeStream(res.iterator, signal, emit);
